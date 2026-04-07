@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume Preview</title>
+    <style>
+      /* Base Styles */
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #555;
+        --accent-color: #3498db;
+        --text-color: #333;
+        --border-color: #ddd;
+      }
+
+      body {
+        background-color: #f4f4f4;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+      }
+
+      /* Container & Print-Ready Sizing */
+      .resume-container {
+        width: 210mm;
+        min-height: 297mm;
+        background: white;
+        padding: 40px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        box-sizing: border-box;
+      }
+
+      /* Header Section */
+      header {
+        text-align: center;
+        border-bottom: 2px solid var(--primary-color);
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 28px;
+        color: var(--primary-color);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      .contact-info {
+        margin-top: 10px;
+        font-size: 14px;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+
+      .contact-info span,
+      .contact-info a {
+        text-decoration: none;
+        color: var(--secondary-color);
+      }
+
+      /* General Section Styling */
+      .section {
+        margin-bottom: 25px;
+      }
+
+      .section h2 {
+        font-size: 18px;
+        text-transform: uppercase;
+        color: var(--primary-color);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 5px;
+        margin-bottom: 12px;
+      }
+
+      /* Experience & Education Items */
+      .experience-item {
+        margin-bottom: 15px;
+      }
+
+      .experience-header,
+      .experience-subheader {
+        display: flex;
+        justify-content: space-between;
+        font-weight: bold;
+      }
+
+      .experience-header {
+        font-size: 16px;
+        color: #000;
+      }
+
+      .experience-subheader {
+        font-size: 14px;
+        color: var(--secondary-color);
+        font-style: italic;
+        margin-bottom: 5px;
+      }
+
+      ul {
+        margin-top: 5px;
+        padding-left: 20px;
+      }
+
+      ul li {
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 3px;
+      }
+
+      /* Skills List (Specific ID Requirement) */
+      .skills-list {
+        display: flex;
+        flex-wrap: wrap;
+        list-style: none;
+        padding: 0;
+      }
+
+      .skills-list li {
+        background: #f0f2f5;
+        padding: 6px 14px;
+        margin: 4px;
+        border-radius: 4px;
+        font-size: 13px;
+        color: var(--primary-color);
+        border: 1px solid #dcdde1;
+      }
+
+      /* PDF & Print Formatting */
+      @media print {
+        body {
+          background: none;
+          padding: 0;
+        }
+        .resume-container {
+          box-shadow: none;
+          margin: 0;
+          width: 100%;
+        }
+        .skills-list li {
+          border: 1px solid #ccc; /* Ensure borders show in PDF */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="resume-container" id="resume-preview">
+      <header>
+        <h1 id="preview-name">{{name}}</h1>
+        <div class="contact-info">
+          <span id="preview-location">{{location}}</span>
+          <span id="preview-phone">{{phone}}</span>
+          <a href="mailto:{{email}}" id="preview-email">{{email}}</a>
+          {{#each socials}}
+          <a href="{{url}}" id="preview-social">{{label}}</a>
+          {{/each}}
+        </div>
+      </header>
+
+      {{#if workExperience}}
+      <section class="section" id="section-experience">
+        <h2>Work Experience</h2>
+
+        {{#each workExperience}}
+        <div class="experience-item">
+          <div class="experience-header">
+            <span class="experience-title">{{company}}</span>
+            <span class="experience-location">{{location}}</span>
+          </div>
+          <div class="experience-subheader">
+            <span>{{role}}</span>
+            <span>{{startDate}} - {{endDate}}</span>
+          </div>
+          <ul>
+            {{#each description}}
+            <li>{{this}}</li>
+            {{/each}}
+          </ul>
+        </div>
+        {{/each}}
+      </section>
+      {{/if}} {{#if education}}
+      <section class="section" id="section-education">
+        <h2>Education</h2>
+        {{#each education}}
+        <div class="experience-item">
+          <div class="experience-header">
+            <span class="experience-title">{{institution}}</span>
+            <span class="experience-location">{{location}}</span>
+          </div>
+          <div class="experience-subheader">
+            <span>{{degree}}</span>
+            <span>{{startDate}} - {{endDate}}</span>
+          </div>
+        </div>
+        {{/each}}
+      </section>
+      {{/if}} {{#if internships}}
+      <section class="section" id="section-internship">
+        <h2>Internship</h2>
+        {{#each internships}}
+        <div class="experience-item">
+          <div class="experience-header">
+            <span class="experience-title">{{company}}</span>
+            <span class="experience-location">{{location}}</span>
+          </div>
+          <div class="experience-subheader">
+            <span>{{role}}</span>
+            <span>{{startDate}} - {{endDate}}</span>
+          </div>
+          <ul>
+            {{#each description}}
+            <li>{{this}}</li>
+            {{/each}}
+          </ul>
+        </div>
+        {{/each}}
+      </section>
+      {{/if}} {{#if projects}}
+      <section class="section" id="section-projects">
+        <h2>Projects</h2>
+        {{#each projects}}
+        <div class="experience-item">
+          <div class="experience-header">
+            <span class="experience-title">{{name}}</span>
+            <span class="experience-location">{{location}}</span>
+          </div>
+          <div class="experience-subheader">
+            <span>{{shortDescription}}</span>
+            <span>{{startDate}} - {{endDate}}</span>
+          </div>
+          <ul>
+            {{#each description}}
+            <li>{{this}}</li>
+            {{/each}}
+          </ul>
+        </div>
+        {{/each}}
+      </section>
+      {{/if}} {{#if skills}}
+      <section class="section" id="section-skills">
+        <h2>Skills</h2>
+        <ul class="skills-list">
+          {{#each skills}}
+          <li>{{this}}</li>
+          {{/each}}
+        </ul>
+      </section>
+      {{/if}} {{#if customSections}} {{#each customSections}}
+      <section class="section">
+        <h2>{{title}}</h2>
+        {{#each items}}
+        <div class="experience-item">
+          <div class="experience-header">
+            <span class="experience-title">{{heading}}</span>
+          </div>
+          <div class="experience-subheader">
+            <span>{{subheading}}</span>
+            <span>{{startDate}} - {{endDate}}</span>
+          </div>
+          <ul>
+            <li>{{description}}</li>
+          </ul>
+        </div>
+        {{/each}}
+      </section>
+      {{/each}} {{/if}}
+    </div>
+  </body>
+</html>

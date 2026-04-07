@@ -1,0 +1,25 @@
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "phone": "+1 234 567 8900",
+  "location": "New York, USA",
+  "socials": [
+    {
+      "label": "LinkedIn",
+      "url": "https://linkedin.com/in/johndoe"
+    }
+  ],
+  "education": [
+    {
+      "institution": "State University",
+      "degree": "B.S. in Computer Science",
+      "location": "New York, USA",
+      "startDate": "Aug 2018",
+      "endDate": "May 2022"
+    }
+  ],
+  "workExperience": [],
+  "internships": [],
+  "projects": [],
+  "skills": ["JavaScript", "HTML/CSS"]
+}

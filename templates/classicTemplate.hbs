@@ -1,0 +1,251 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{basics.name}} Resume</title>
+    <style>
+      /* A4 Page Setup */
+      @page {
+        size: A4;
+        margin: 0;
+      }
+      body {
+        margin: 0;
+        padding: 40px 50px;
+        font-family: "Calibri", Arial, sans-serif;
+        background: white;
+        color: #000;
+        box-sizing: border-box;
+        direction: ltr;
+        unicode-bidi: plaintext;
+      }
+      .description,
+      .description[contenteditable] {
+        direction: ltr !important;
+        unicode-bidi: plaintext !important;
+        text-align: left !important;
+      }
+
+      /* Header */
+      .header {
+        margin-bottom: 20px;
+      }
+      .name {
+        font-size: 26pt;
+        font-weight: bold;
+        margin: 0 0 5px 0;
+        text-transform: uppercase;
+      }
+      .contact-info {
+        font-size: 11pt;
+        color: #333;
+      }
+      .contact-info a {
+        color: #1155cc;
+        text-decoration: none;
+      }
+
+      /* Sections */
+      .section {
+        margin-bottom: 15px;
+      }
+      .section-title {
+        font-size: 14pt;
+        font-weight: bold;
+        text-transform: uppercase;
+        border-bottom: 1.5px solid #000;
+        margin: 0 0 10px 0;
+        padding-bottom: 3px;
+      }
+
+      /* Items */
+      .item {
+        margin-bottom: 12px;
+      }
+      .item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 2px;
+      }
+      .item-title {
+        font-size: 12pt;
+        font-weight: bold;
+      }
+      .item-location {
+        font-size: 12pt;
+        font-weight: bold;
+      }
+      .item-subtitle {
+        font-size: 11pt;
+        font-style: italic;
+      }
+      .item-date {
+        font-size: 11pt;
+      }
+
+      /* Lists */
+      ul {
+        margin: 4px 0 0 0;
+        padding-left: 20px;
+      }
+      li {
+        font-size: 11pt;
+        margin-bottom: 3px;
+        line-height: 1.4;
+      }
+
+      .description {
+        direction: ltr;
+        unicode-bidi: plaintext;
+      }
+      .description p {
+        margin: 0 0 5px 0;
+        font-size: 11pt;
+        line-height: 1.4;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <div
+      class="header"
+      data-section="basics"
+      onclick="window.parent.postMessage({type: 'editSection', section: 'basics'}, '*')"
+    >
+      <h1
+        class="name"
+        contenteditable
+        oninput="window.parent.postMessage({type: 'updateField', path: 'basics.name', value: this.innerText}, '*')"
+      >{{basics.name}}</h1>
+      <div class="contact-info">
+        {{#if basics.location}}{{basics.location}} | {{/if}}
+        {{#if basics.phone}}{{basics.phone}} | {{/if}}
+        {{#if basics.email}}{{basics.email}} | {{/if}}
+        {{#if basics.url}}<a href="{{basics.url}}">{{basics.url}}</a>{{/if}}
+      </div>
+    </div>
+
+    <!-- Education Section -->
+    {{#if education.length}}
+      <div
+        class="section"
+        data-section="education"
+        onclick="window.parent.postMessage({type: 'editSection', section: 'education'}, '*')"
+      >
+        <h2 class="section-title">Education</h2>
+        {{#each education}}
+          <div class="item">
+            <div class="item-header">
+              <span class="item-title" contenteditable oninput="window.parent.postMessage({type: 'updateField', path: 'education.{{@index}}.institution', value: this.innerText}, '*')">{{this.institution}}</span>
+              <span class="item-location">{{this.location}}</span>
+            </div>
+            <div class="item-header">
+              <span class="item-subtitle">{{this.area}}{{#if this.gpa}}
+                  (GPA:
+                  {{this.gpa}}){{/if}}</span>
+              <span class="item-date">{{this.startDate}}
+                -
+                {{this.endDate}}</span>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    {{/if}}
+
+    <!-- Work Experience Section -->
+    {{#if workExperience.length}}
+      <div
+        class="section"
+        data-section="workExperience"
+        onclick="window.parent.postMessage({type: 'editSection', section: 'workExperience'}, '*')"
+      >
+        <h2 class="section-title">Work Experience</h2>
+        {{#each workExperience}}
+          <div class="item">
+            <div class="item-header">
+              <span class="item-title" contenteditable oninput="window.parent.postMessage({type: 'updateField', path: 'workExperience.{{@index}}.company', value: this.innerText}, '*')">{{this.company}}</span>
+              <span class="item-location">{{this.location}}</span>
+            </div>
+            <div class="item-header">
+              <span class="item-subtitle">{{this.position}}</span>
+              <span class="item-date">{{this.startDate}}
+                -
+                {{this.endDate}}</span>
+            </div>
+            {{#if this.description}}
+              <div class="description" contenteditable dir="ltr" data-path="workExperience.{{@index}}.description" oninput="window.parent.postMessage({type: 'updateField', path: this.dataset.path, value: this.innerHTML}, '*')">{{{this.description}}}</div>
+            {{/if}}
+          </div>
+        {{/each}}
+      </div>
+    {{/if}}
+
+    <!-- Projects Section -->
+    {{#if projects.length}}
+      <div
+        class="section"
+        data-section="projects"
+        onclick="window.parent.postMessage({type: 'editSection', section: 'projects'}, '*')"
+      >
+        <h2 class="section-title">Projects</h2>
+        {{#each projects}}
+          <div class="item">
+            <div class="item-header">
+              <span class="item-title" contenteditable oninput="window.parent.postMessage({type: 'updateField', path: 'projects.{{@index}}.name', value: this.innerText}, '*')">{{this.name}}</span>
+              <span class="item-date">{{this.startDate}}
+                -
+                {{this.endDate}}</span>
+            </div>
+            {{#if this.description}}
+              <div class="description" contenteditable dir="ltr" data-path="projects.{{@index}}.description" oninput="window.parent.postMessage({type: 'updateField', path: this.dataset.path, value: this.innerHTML}, '*')">{{{this.description}}}</div>
+            {{/if}}
+          </div>
+        {{/each}}
+      </div>
+    {{/if}}
+
+    <!-- Skills Section -->
+    {{#if skills.length}}
+      <div
+        class="section"
+        data-section="skills"
+        onclick="window.parent.postMessage({type: 'editSection', section: 'skills'}, '*')"
+      >
+        <h2 class="section-title">Skills</h2>
+        <ul>
+          {{#each skills}}
+            <li>{{this}}</li>
+          {{/each}}
+        </ul>
+      </div>
+    {{/if}}
+
+    <!-- Custom Sections -->
+    {{#each customSections}}
+      {{#if this.items.length}}
+        <div
+          class="section"
+          data-section="{{this.id}}"
+          onclick="window.parent.postMessage({type: 'editSection', section: '{{this.id}}'}, '*')"
+        >
+          <h2 class="section-title">{{this.title}}</h2>
+          {{#each this.items}}
+            <div class="item">
+              <div class="item-header">
+                <span class="item-title" contenteditable oninput="window.parent.postMessage({type: 'updateField', path: 'customSections.{{@../index}}.items.{{@index}}.name', value: this.innerText}, '*')">{{this.name}}</span>
+                {{#if this.location}}<span class="item-location">{{this.location}}</span>{{/if}}
+              </div>
+              <div class="item-header">
+                <span class="item-subtitle">{{this.subtitle}}</span>
+                <span class="item-date">{{this.startDate}}{{#if this.startDate}}{{#if this.endDate}} - {{/if}}{{/if}}{{this.endDate}}</span>
+              </div>
+              {{#if this.description}}
+                <div class="description" contenteditable data-path="customSections.{{@../index}}.items.{{@index}}.description" oninput="window.parent.postMessage({type: 'updateField', path: this.dataset.path, value: this.innerHTML}, '*')">{{{this.description}}}</div>
+              {{/if}}
+            </div>
+          {{/each}}
+        </div>
+      {{/if}}
+    {{/each}}
+  </body>
+</html>

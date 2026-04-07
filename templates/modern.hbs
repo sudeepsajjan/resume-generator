@@ -1,0 +1,192 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume - Modern</title>
+    <style>
+      :root {
+        --primary: #1c3172;
+        --secondary: #4e4e4e;
+        --page-margin: 24px;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Inter", "Segoe UI", sans-serif;
+        background: #f5f7fb;
+        color: #333;
+        direction: ltr;
+        unicode-bidi: plaintext;
+      }
+      .description,
+      .description[contenteditable] {
+        direction: ltr !important;
+        unicode-bidi: plaintext !important;
+        text-align: left !important;
+      }
+      .card {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 12px auto;
+        background: #fff;
+        box-shadow: 0 0 16px rgba(0, 0, 0, 0.08);
+        padding: var(--page-margin);
+        box-sizing: border-box;
+        position: relative;
+        background-image: repeating-linear-gradient(
+          to bottom,
+          transparent,
+          transparent calc(297mm - 2px),
+          #ff4444 calc(297mm - 2px),
+          #ff4444 297mm
+        );
+      }
+      .head {
+        display: flex;
+        justify-content: space-between;
+      }
+      .head h1 {
+        margin: 0;
+        color: var(--primary);
+      }
+      .contact {
+        font-size: 12px;
+        color: var(--secondary);
+      }
+      .section {
+        margin-top: 16px;
+      }
+      .section h2 {
+        margin: 0 0 10px;
+        color: var(--primary);
+        border-bottom: 2px solid #e8ebf2;
+        padding-bottom: 5px;
+        text-transform: uppercase;
+        font-size: 12px;
+      }
+      .block {
+        margin-bottom: 10px;
+        break-inside: avoid;
+      }
+      .block-title {
+        font-weight: 700;
+      }
+      .block-sub {
+        color: var(--secondary);
+        font-size: 11px;
+      }
+      ul {
+        margin: 6px 0 0 18px;
+      }
+      .description {
+        font-size: 13px;
+        margin: 6px 0;
+        line-height: 1.5;
+        direction: ltr;
+        unicode-bidi: plaintext;
+      }
+      .description p {
+        margin: 4px 0;
+      }
+      .description ul {
+        margin: 4px 0 0 18px;
+      }
+      .description li {
+        margin: 2px 0;
+      }
+      @media print {
+        body {
+          background: #fff;
+          margin: 0;
+          padding: 0;
+        }
+        .card {
+          width: 100%;
+          margin: 0;
+          box-shadow: none;
+          background-image: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div
+        class="head"
+        data-section="basics"
+        onclick="window.parent.postMessage({type: 'editSection', section: 'basics'}, '*')"
+      >
+        <div>
+          <h1>{{basics.name}}</h1>
+          <p>{{basics.label}}</p>
+        </div>
+        <div class="contact">
+          <div>{{basics.email}}</div>
+          <div>{{basics.phone}}</div>
+          <div>{{basics.location}}</div>
+        </div>
+      </div>
+
+      {{#if summary}}
+        <div class="section">
+          <h2>Summary</h2>
+          <p>{{summary}}</p>
+        </div>
+      {{/if}}
+
+      {{#if workExperience}}
+        <div
+          class="section"
+          data-section="workExperience"
+          onclick="window.parent.postMessage({type: 'editSection', section: 'workExperience'}, '*')"
+        >
+          <h2>Experience</h2>
+          {{#each workExperience}}
+            <div class="block">
+              <div class="block-title">{{position}} — {{company}}</div>
+              <div class="block-sub">{{formatDate startDate endDate}}
+                /
+                {{location}}</div>
+              {{#if description}}<div
+                  class="description"
+                  contenteditable
+                  dir="ltr"
+                  data-path="workExperience.{{@index}}.description"
+                  oninput="window.parent.postMessage({type: 'updateField', path: this.dataset.path, value: this.innerHTML}, '*')"
+                >{{{description}}}</div>{{/if}}
+            </div>
+          {{/each}}
+        </div>
+      {{/if}}
+
+      {{#if education}}
+        <div
+          class="section"
+          data-section="education"
+          onclick="window.parent.postMessage({type: 'editSection', section: 'education'}, '*')"
+        >
+          <h2>Education</h2>
+          {{#each education}}
+            <div class="block">
+              <div class="block-title">{{institution}}</div>
+              <div class="block-sub">{{area}}
+                •
+                {{formatDate startDate endDate}}</div>
+            </div>
+          {{/each}}
+        </div>
+      {{/if}}
+
+      {{#if skills}}
+        <div
+          class="section"
+          data-section="skills"
+          onclick="window.parent.postMessage({type: 'editSection', section: 'skills'}, '*')"
+        >
+          <h2>Skills</h2>
+          <p>{{#each skills}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+        </div>
+      {{/if}}
+    </div>
+  </body>
+</html>

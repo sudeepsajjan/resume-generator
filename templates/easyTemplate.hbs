@@ -1,0 +1,174 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume - Easy</title>
+    <style>
+      :root {
+        --page-margin: 24px;
+      }
+      body {
+        font-family: "Helvetica", Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f4f4f9;
+        color: #222;
+        direction: ltr;
+        unicode-bidi: plaintext;
+      }
+      .description,
+      .description[contenteditable] {
+        direction: ltr !important;
+        unicode-bidi: plaintext !important;
+        text-align: left !important;
+      }
+      .page {
+        width: 210mm;
+        min-height: 297mm;
+        padding: var(--page-margin);
+        margin: auto;
+        background: #fff;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        box-sizing: border-box;
+        background-image: repeating-linear-gradient(
+          to bottom,
+          transparent,
+          transparent calc(297mm - 2px),
+          #ff4444 calc(297mm - 2px),
+          #ff4444 297mm
+        );
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        border-bottom: 3px solid #007acc;
+      }
+      .h2 {
+        color: #007acc;
+        margin-top: 20px;
+        text-transform: uppercase;
+      }
+      .section {
+        margin-top: 14px;
+      }
+      .entry {
+        margin-bottom: 10px;
+        break-inside: avoid;
+      }
+      .entry .title {
+        font-weight: bold;
+      }
+      .item-list {
+        margin: 5px 0 0 18px;
+      }
+      .item-list li {
+        margin-bottom: 4px;
+      }
+      .description {
+        font-size: 13px;
+        margin: 6px 0;
+        line-height: 1.5;
+        direction: ltr;
+        unicode-bidi: plaintext;
+      }
+      .description p {
+        margin: 4px 0;
+      }
+      .description ul {
+        margin: 4px 0 0 18px;
+      }
+      .description li {
+        margin: 2px 0;
+      }
+      @media print {
+        body {
+          background: #fff;
+          padding: 0;
+        }
+        .page {
+          width: 100%;
+          margin: 0;
+          box-shadow: none;
+          background-image: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div
+        class="header"
+        data-section="basics"
+        onclick="window.parent.postMessage({type: 'editSection', section: 'basics'}, '*')"
+      >
+        <div>
+          <h1>{{basics.name}}</h1>
+          <div>{{basics.label}}</div>
+        </div>
+        <div>{{basics.email}} • {{basics.phone}}</div>
+      </div>
+
+      {{#if summary}}
+        <div class="section">
+          <h3 class="h2">Summary</h3>
+          <p>{{summary}}</p>
+        </div>
+      {{/if}}
+
+      {{#if workExperience}}
+        <div
+          class="section"
+          data-section="workExperience"
+          onclick="window.parent.postMessage({type: 'editSection', section: 'workExperience'}, '*')"
+        >
+          <h3 class="h2">Experience</h3>
+          {{#each workExperience}}
+            <div class="entry">
+              <div class="title">{{position}} at {{company}}</div>
+              <div class="meta">{{formatDate startDate endDate}}
+                |
+                {{location}}</div>
+              {{#if description}}<div
+                  class="description"
+                  contenteditable
+                  dir="ltr"
+                  data-path="workExperience.{{@index}}.description"
+                  oninput="window.parent.postMessage({type: 'updateField', path: this.dataset.path, value: this.innerHTML}, '*')"
+                >{{{description}}}</div>{{/if}}
+            </div>
+          {{/each}}
+        </div>
+      {{/if}}
+
+      {{#if education}}
+        <div
+          class="section"
+          data-section="education"
+          onclick="window.parent.postMessage({type: 'editSection', section: 'education'}, '*')"
+        >
+          <h3 class="h2">Education</h3>
+          {{#each education}}
+            <div class="entry">
+              <div class="title">{{institution}} — {{area}}</div>
+              <div class="meta">{{formatDate startDate endDate}}
+                | GPA:
+                {{gpa}}</div>
+            </div>
+          {{/each}}
+        </div>
+      {{/if}}
+
+      {{#if skills}}
+        <div
+          class="section"
+          data-section="skills"
+          onclick="window.parent.postMessage({type: 'editSection', section: 'skills'}, '*')"
+        >
+          <h3 class="h2">Skills</h3>
+          <p>{{#each skills}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>
+        </div>
+      {{/if}}
+    </div>
+  </body>
+</html>
