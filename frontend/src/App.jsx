@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import RichTextEditor from "./RichTextEditor";
 import DraggableSection from "./DraggableSection";
 import "./App.css";
@@ -10,12 +10,23 @@ import html2pdf from "html2pdf.js";
 const initialData = {
   basics: {
     name: "JOHN DOE",
-    label: "",
+    firstName: "JOHN",
+    lastName: "DOE",
+    label: "Software Engineer",
+    image: "",
     email: "johndoe@gmail.com",
     phone: "+91 123456789",
     location: "Karnataka,India",
+    address: "Karnataka,India",
     url: "https://www.linkedin.com/in/sudeep-sajjan/",
-    summary: "",
+    website: "https://www.linkedin.com/in/sudeep-sajjan/",
+    summary: "<p>A passionate professional with experience in building scalable solutions and working with modern technologies.</p>",
+    profiles: [
+      {
+        network: "LinkedIn",
+        url: "https://www.linkedin.com/in/sudeep-sajjan/"
+      }
+    ]
   },
   workExperience: [
     {
@@ -206,6 +217,7 @@ function App() {
   };
 
   const [draggedSection, setDraggedSection] = useState(null);
+  const domOverridesRef = useRef({});
 
   async function refreshPreview(payload) {
     setLoading(true);
@@ -336,6 +348,14 @@ function App() {
           .section:hover { border-color: #93c5fd; border-style: dashed; }
           .experience-item:hover { border-color: #fca5a5; border-style: dashed; }
           
+          /* Inline Editable hover styling */
+          [contenteditable="true"]:hover {
+            outline: 1px dashed #60a5fa;
+            background: rgba(59, 130, 246, 0.05);
+            cursor: text;
+            border-radius: 2px;
+          }
+          
           .hover-btn {
             position: absolute;
             display: none;
@@ -377,19 +397,138 @@ function App() {
           }
           .global-add-section:hover { background: #f1f5f9; border-color: #94a3b8; color: #334155; }
           
+          .add-between-btn {
+            height: 12px;
+            margin: 4px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+            z-index: 100;
+          }
+          .add-between-btn::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #cbd5e1;
+            border-style: dashed;
+          }
+          .add-between-btn span {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            position: relative;
+            font-family: sans-serif;
+            font-weight: bold;
+          }
+          .add-between-btn:hover { opacity: 1; height: 24px; }
+          .add-between-btn:hover::before { background: #3b82f6; }
+          .add-between-btn:hover span {
+            background: #eff6ff;
+            color: #2563eb;
+            border-color: #bfdbfe;
+          }
+
           @media print {
             .no-print { display: none !important; }
             .section, .experience-item { border: none !important; }
           }
         </style>
         <script>
+          window.domOverrides = ${JSON.stringify(domOverridesRef.current)};
+          
+          function applyOverrides() {
+             for (const [selector, value] of Object.entries(window.domOverrides)) {
+                 try {
+                     const el = document.querySelector(selector);
+                     if (el) el.innerHTML = value;
+                 } catch(e) {}
+             }
+          }
+          
+          function getUniquePath(el) {
+              if (el.hasAttribute('data-path')) return el.getAttribute('data-path');
+              let path = [];
+              let current = el;
+              while (current && current !== document.body) {
+                  let index = 1;
+                  let sibling = current.previousElementSibling;
+                  while (sibling) {
+                      if (sibling.tagName === current.tagName) index++;
+                      sibling = sibling.previousElementSibling;
+                  }
+                  path.unshift(current.tagName.toLowerCase() + ':nth-of-type(' + index + ')');
+                  current = current.parentElement;
+              }
+              return path.join(' > ');
+          }
+
           function initHoverEditorControls() {
+            applyOverrides();
+
             const parentDoc = window.parent.document;
             if (!parentDoc) return;
 
             const sections = document.querySelectorAll('.section');
+            
+            // Make text components editable
+            const editableTags = 'h1, h2, h3, h4, h5, h6, p, span, li, div';
+            document.querySelectorAll(editableTags).forEach(el => {
+                const isLeaf = Array.from(el.childNodes).every(n => n.nodeType === 3 || ['A','B','I','U','SPAN','BR'].includes(n.tagName));
+                if (isLeaf && el.textContent.trim().length > 0 && !el.closest('.no-print')) {
+                    el.setAttribute('contenteditable', 'true');
+                }
+            });
+
+            let overrideTimeout;
+            document.body.addEventListener('input', (e) => {
+                if (e.target.hasAttribute('contenteditable')) {
+                    const pathAttr = e.target.getAttribute('data-path');
+                    if (pathAttr) {
+                        window.parent.postMessage({ type: 'updateField', path: pathAttr, value: e.target.innerHTML }, '*');
+                    } else {
+                        const selector = getUniquePath(e.target);
+                        clearTimeout(overrideTimeout);
+                        overrideTimeout = setTimeout(() => {
+                            window.parent.postMessage({ type: 'domOverride', selector, value: e.target.innerHTML }, '*');
+                        }, 300);
+                    }
+                }
+            });
+
             sections.forEach((sec, sIdx) => {
               
+              // Add Section Between buttons
+              const addBetweenBtn = document.createElement('div');
+              addBetweenBtn.className = 'add-between-btn no-print';
+              addBetweenBtn.innerHTML = '<span>➕ Add Section Here</span>';
+              addBetweenBtn.onclick = (e) => {
+                  if (e.isTrusted) {
+                      window.parent.postMessage({ type: 'addCustomSectionAtIndex', index: sIdx + 1 }, '*');
+                  }
+              };
+              sec.after(addBetweenBtn);
+
+              if (sIdx === 0) {
+                  const addBeforeBtn = document.createElement('div');
+                  addBeforeBtn.className = 'add-between-btn no-print';
+                  addBeforeBtn.innerHTML = '<span>➕ Add Section Here</span>';
+                  addBeforeBtn.onclick = (e) => {
+                      if (e.isTrusted) {
+                          window.parent.postMessage({ type: 'addCustomSectionAtIndex', index: 0 }, '*');
+                      }
+                  };
+                  sec.before(addBeforeBtn);
+              }
+
               let targetParent = null;
               const parentSections = Array.from(parentDoc.querySelectorAll('.draggable-section'));
               
@@ -509,7 +648,20 @@ function App() {
         </script>
       `;
 
-      setPreview((json.html || "") + visualizerScript + editorControlsScript);
+      // Inject style to center align the Basics/Header section dynamically
+      const centerBasicsStyle = `
+        <style>
+          header, .header, #header, .resume-header, .basics-section, .contact-info {
+            text-align: center !important;
+          }
+          header *, .header *, #header *, .resume-header *, .basics-section *, .contact-info * {
+            text-align: center !important;
+            justify-content: center !important;
+          }
+        </style>
+      `;
+
+      setPreview((json.html || "") + centerBasicsStyle + visualizerScript + editorControlsScript);
     } catch (err) {
       // Only overwrite the preview with an error if it hasn't loaded yet.
       // Otherwise, keep the previous successful preview to avoid disrupting the user while typing.
@@ -552,6 +704,10 @@ function App() {
         if (iframe) {
           iframe.style.height = event.data.height + "px";
         }
+          } else if (event.data?.type === "addCustomSectionAtIndex") {
+            addCustomSection(event.data.index);
+          } else if (event.data?.type === "domOverride") {
+            domOverridesRef.current[event.data.selector] = event.data.value;
       }
     };
     window.addEventListener("message", handleMessage);
@@ -648,6 +804,40 @@ function App() {
     });
   };
 
+  const handleNameChange = (val) => {
+    const parts = val.split(" ");
+    setData((prev) => {
+      const copy = JSON.parse(JSON.stringify(prev));
+      copy.basics.name = val;
+      copy.basics.firstName = parts[0] || "";
+      copy.basics.lastName = parts.slice(1).join(" ") || "";
+      return copy;
+    });
+  };
+
+  const handleLocationChange = (val) => {
+    setData((prev) => {
+      const copy = JSON.parse(JSON.stringify(prev));
+      copy.basics.location = val;
+      copy.basics.address = val;
+      return copy;
+    });
+  };
+
+  const handleUrlChange = (val) => {
+    setData((prev) => {
+      const copy = JSON.parse(JSON.stringify(prev));
+      copy.basics.url = val;
+      copy.basics.website = val;
+      if (!copy.basics.profiles) {
+        copy.basics.profiles = [{ network: "LinkedIn", url: val }];
+      } else if (copy.basics.profiles.length > 0) {
+        copy.basics.profiles[0].url = val;
+      }
+      return copy;
+    });
+  };
+
   const addItem = (section) => {
     setData((prev) => {
       const copy = JSON.parse(JSON.stringify(prev));
@@ -728,7 +918,7 @@ function App() {
     setDraggedSection(null);
   };
 
-  const addCustomSection = () => {
+  const addCustomSection = (index) => {
     const id = `custom_${Date.now()}`;
     setData((prev) => {
       const copy = JSON.parse(JSON.stringify(prev));
@@ -740,7 +930,15 @@ function App() {
       });
       return copy;
     });
-    setSectionOrder((prev) => [...prev, id]);
+    setSectionOrder((prev) => {
+      const newOrder = [...prev];
+      if (typeof index === "number") {
+        newOrder.splice(index, 0, id);
+      } else {
+        newOrder.push(id);
+      }
+      return newOrder;
+    });
   };
 
   const renderSection = (sectionId) => {
@@ -1311,14 +1509,26 @@ function App() {
                 className="template-modal"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
-                  type="button"
-                  className="modal-close"
-                  onClick={closeTemplateModal}
-                >
-                  ✕
-                </button>
+              <div className="template-modal-header">
                 <h2>{previewTemplate} Preview</h2>
+                <div className="template-modal-actions">
+                  <button
+                    type="button"
+                    className="btn-primary use-template-btn"
+                    onClick={() => chooseTemplate(previewTemplate)}
+                  >
+                    Use this template
+                  </button>
+                  <button
+                    type="button"
+                    className="modal-close"
+                    onClick={closeTemplateModal}
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+              <div className="template-modal-content">
                 <img
                   className="template-modal-img"
                   src={getTemplatePreviewImage(previewTemplate)}
@@ -1328,15 +1538,7 @@ function App() {
                     e.target.src = classicTemplateImg;
                   }}
                 />
-                <div className="template-modal-actions">
-                  <button
-                    type="button"
-                    className="btn-primary use-template-btn"
-                    onClick={() => chooseTemplate(previewTemplate)}
-                  >
-                    Use this template
-                  </button>
-                </div>
+              </div>
               </div>
             </div>
           )}
@@ -1399,7 +1601,7 @@ function App() {
             <label>Name</label>
             <input
               value={data.basics.name}
-              onChange={(e) => updateField("basics.name", e.target.value)}
+              onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Full name"
             />
 
@@ -1424,26 +1626,25 @@ function App() {
               placeholder="+1 234 567 8900"
             />
 
-            <label>Location</label>
+            <label>Location / Address</label>
             <input
               value={data.basics.location}
-              onChange={(e) => updateField("basics.location", e.target.value)}
+              onChange={(e) => handleLocationChange(e.target.value)}
               placeholder="City, Country"
             />
 
-            <label>URL / Website</label>
+            <label>LinkedIn / Website</label>
             <input
               value={data.basics.url || ""}
-              onChange={(e) => updateField("basics.url", e.target.value)}
+              onChange={(e) => handleUrlChange(e.target.value)}
               placeholder="https://linkedin.com/in/..."
             />
 
             <label>Summary</label>
-            <textarea
+            <RichTextEditor
               value={data.basics.summary}
-              onChange={(e) => updateField("basics.summary", e.target.value)}
+              onChange={(html) => updateField("basics.summary", html)}
               placeholder="Brief professional summary..."
-              rows={3}
             />
           </section>
 

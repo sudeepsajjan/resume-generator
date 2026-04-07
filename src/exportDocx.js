@@ -1,4 +1,4 @@
-const { Document, Packer, Paragraph, HeadingLevel } = require("docx");
+const { Document, Packer, Paragraph, HeadingLevel, AlignmentType } = require("docx");
 
 function stripHtml(html) {
   if (!html || typeof html !== "string") return "";
@@ -23,7 +23,13 @@ async function generateDocx(data) {
 
   // --- Basics Section ---
   const name = data.basics?.name || "Resume";
-  children.push(new Paragraph({ text: name, heading: HeadingLevel.TITLE }));
+  children.push(
+    new Paragraph({ 
+      text: name, 
+      heading: HeadingLevel.TITLE, 
+      alignment: AlignmentType.CENTER 
+    })
+  );
 
   const contactInfo = [
     data.basics?.email,
@@ -34,7 +40,12 @@ async function generateDocx(data) {
     .filter(Boolean)
     .join(" | ");
   if (contactInfo) {
-    children.push(new Paragraph({ text: contactInfo }));
+    children.push(
+      new Paragraph({ 
+        text: contactInfo, 
+        alignment: AlignmentType.CENTER 
+      })
+    );
   }
 
   if (data.basics?.summary) {
